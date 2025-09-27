@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Happy 100 Days</title>
+  <style>
+:root{--accent:#ff6b9f;--accent2:#ffdc8a;--bg:#0b0711} *{box-sizing:border-box} 
+html,body{height:100%;margin:0;padding:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;color:#fff;background:radial-gradient(circle at center,#1a0f2c 0%,#050309 100%)}
+
+/* INTRO SCREEN */
+#introScreen{position:absolute;inset:0;background:radial-gradient(circle at center,#ff6b9f,#ffdc8a);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;color:#fff;text-align:center;padding:20px} 
+#introScreen h2{font-size:36px;margin:12px 0;color:#fff;text-shadow:0 0 8px #ff6b9f} 
+#introScreen input{margin-top:12px;padding:10px 14px;border-radius:10px;border:none;font-size:18px} 
+#introScreen button{margin-top:20px;padding:12px 24px;border:none;border-radius:12px;background:linear-gradient(90deg,#ff6b9f,#ffdc8a);color:#111;font-weight:700;cursor:pointer;font-size:18px}
+
+/* HERO */
+.hero{height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:20px;display:none} 
+.hero-bg{position:absolute;inset:0;background-image:linear-gradient(180deg,rgba(255,107,159,0.2),rgba(255,220,138,0.15));pointer-events:none;mix-blend-mode:screen} 
+.container{z-index:5;max-width:1100px;width:100%;display:grid;grid-template-columns:1fr 420px;gap:30px;align-items:center} 
+
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border-radius:16px;padding:28px;box-shadow:0 10px 40px rgba(255,107,159,0.4);backdrop-filter:blur(8px);border:1px solid rgba(255,107,159,0.2)} 
+h1{font-size:48px;margin:0 0 12px;letter-spacing:2px;color:var(--accent);text-shadow:0 0 8px var(--accent),0 0 16px var(--accent2)} 
+.sub{opacity:0.9;margin-bottom:16px;color:#ffdc8a;text-shadow:0 0 6px #ff6b9f} 
+
+.typing{font-size:20px;height:52px;display:flex;align-items:center;color:#fff} 
+.typing .cursor{width:3px;height:26px;background:var(--accent2);margin-left:8px;animation:blink 1s infinite} 
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}} 
+
+.count{display:flex;gap:14px;margin-top:18px} 
+.count .box{background:rgba(255,220,138,0.1);padding:14px 18px;border-radius:12px;min-width:72px;text-align:center;color:#111;font-weight:700;box-shadow:0 6px 18px rgba(255,107,159,0.3)} 
+.count .num{font-size:22px;color:var(--accent2)} 
+
+.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:20px} 
+.gallery img{width:100%;height:130px;object-fit:cover;border-radius:12px;cursor:pointer;transform-origin:center;transition:transform .3s ease,box-shadow .3s ease;box-shadow:0 4px 16px rgba(255,107,159,0.3)} 
+.gallery img:hover{transform:scale(1.08);box-shadow:0 12px 40px rgba(255,220,138,0.6)} 
+
+.right{display:flex;flex-direction:column;gap:18px} 
+.music-control{display:flex;gap:12px;align-items:center} 
+.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));padding:12px 16px;border-radius:12px;color:#111;font-weight:700;border:none;cursor:pointer;transition:transform .2s ease} 
+.btn:hover{transform:scale(1.05)} 
+
+.falling{pointer-events:none;position:absolute;inset:0;z-index:3;overflow:hidden} 
+.falling img{position:absolute;width:100px;height:100px;object-fit:cover;border-radius:14px;box-shadow:0 10px 28px rgba(255,107,159,0.5);opacity:0.95;filter:drop-shadow(0 0 6px #ffdc8a)} 
+
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(0,0,0,0.45),rgba(0,0,0,0.8));z-index:50} 
+.modal .modal-card{background:linear-gradient(135deg,#1a0f2c,#3d0d45);padding:20px;border-radius:16px;max-width:960px;width:90%;display:flex;gap:20px;box-shadow:0 8px 36px rgba(255,107,159,0.4)} 
+.modal img{width:340px;height:340px;object-fit:cover;border-radius:12px;box-shadow:0 8px 24px rgba(255,220,138,0.5)} 
+.modal .meta{flex:1;color:#fff} 
+
+.game{height:140px;border-radius:12px;padding:14px;background:linear-gradient(90deg,rgba(255,107,159,0.12),rgba(255,220,138,0.05));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden} 
+.heart{position:absolute;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;text-shadow:0 0 8px #ffdc8a,0 0 16px #ff6b9f;animation:floatHeart 4s linear infinite} 
+@keyframes floatHeart{0%{transform:translateY(0)}100%{transform:translateY(160px)}} 
+
+footer{position:absolute;left:0;right:0;bottom:8px;text-align:center;z-index:6;opacity:0.8;font-size:13px;color:#ffdc8a;text-shadow:0 0 4px #ff6b9f} 
+
+@media(max-width:980px){.container{grid-template-columns:1fr}.hero{padding:12px}} 
+
+/* Canvas & Nav Buttons */
+canvas{position:absolute;width:100%;height:100%} 
+.nav-buttons{position:fixed;top:20px;left:20px;z-index:100} 
+.nav-buttons button{margin-right:10px;padding:10px 16px;border:none;border-radius:8px;background:linear-gradient(90deg,#ff6b9f,#ffdc8a);color:#111;font-weight:700;cursor:pointer}
+</style>
+
+</head>
+<body>
+
+
+<div id="introScreen" style="text-align:center;padding:40px;color:#fff;">
+  <h2>Chúc mừng kỷ niệm ngày yêu nhau anh iu💕</h2>
+  <h3>Bắp cute 💕BBi Chan</h3>
+  <div>Nhập đúng ngày yêu nhau 💕</div>
+  
+  <!-- Trường 1: Ngày yêu nhau -->
+  <input type="date" id="dateInput" placeholder="Ngày yêu nhau" style="margin:10px;padding:8px;border-radius:6px;border:none;font-size:16px;">
+  <div>Mật khẩu là ngày tháng năm của 2 lần gặp nhau, gồm 12 kí tự</div>
+  <!-- Trường 2: Mật khẩu -->
+  <input type="password" id="passInput" placeholder="Mật khẩu" style="margin:10px;padding:8px;border-radius:6px;border:none;font-size:16px;">
+  
+  <button id="startBtn" style="padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(90deg,#ff6b9f,#ffdc8a);color:#111;font-weight:700;cursor:pointer;">Mở kỷ niệm</button>
+  
+  <div id="passMsg" style="color:#ffdc8a;margin-top:10px;"></div>
+</div>
+
+
+<!-- Màn 2  -->
+<div class="hero" id="mainHero">
+  <div class="falling" id="falling"></div>
+  <div class="hero-bg"></div>
+  <div class="container">
+    <div class="card">
+      <h2>Happy Anniversary 100 days </h2>
+      <div class="sub">Thank you for coming into my life 💕 Phạm Dũng 💕 Văn Trang </div>
+      <div class="sub">Mốc 💕21/06 - 04/07 - 04/09 - 29/09/2025 💕</div>
+      <div class="typing" id="typing"><div id="typingText"></div><div class="cursor"></div></div>
+      <div class="count" id="count">
+        <div class="box"><div class="num" id="daysCount">--</div><div class="lbl">Ngày yêu rùi đó ha 💕</div></div>
+        <div class="box"><div class="num" id="hoursCount">--</div><div class="lbl">Giờ yêu nhau💕</div></div>
+        <div class="box"><div class="num" id="secondsCount">--</div><div class="lbl">Giây yêu nhau 💕</div></div>
+      </div>
+    <!-- Mấy cái hộp -->
+      <div class="gallery" id="gallery">
+        <img src="images/1.jpg" data-caption="I love you 3000, Gửi đến anh đầy ắp tình yêu thương của em ạ 💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕" alt="photo1">
+        <img src="images/11.jpg" data-caption="I miss You. Thật sự nhớ anh nhiều lắm 💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕" alt="photo2">
+        <img src="images/8.jpg" data-caption="Phải iu thương em nhiều hơn đấy ạ 💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕" alt="photo3">
+        <img src="images/4.jpg" data-caption="💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕" alt="photo4">
+      </div>
+      <div style="margin-top:16px;display:flex;gap:50px;flex-wrap:wrap">
+        <button class="btn" id="openPopup">ở đây có thêm ảnh và lời iu thương nữa ha💕 </button>
+        <button class="btn" id="togglePics">Bật/Tắt ảnh rơi nhá bbi</button>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><strong>Bắp cute ❤️ Bbi Chan</strong><div class="sub">Bbi click "Play" để nghe bài hát</div></div>
+          <div class="music-control"><button class="btn" id="musicToggle">Play</button></div>
+        </div>
+        <div style="margin-top:12px">
+          <label style="font-size:13px;opacity:0.9">Bài hát Hơn cả yêu - Đức Phúc <span id="trackName">Your Song</span></label>
+        </div>
+    
+        <button id="pinkboardbtn" class="btn">Tình iu to đùng nè -> click vô</button>
+
+
+
+      </div>
+      <div class="card game" id="game"><div>Anh chạm vào trái tim rơi để mở lời yêu thương của bé nh, Mỗi trái tym là một lời yêu thương bé gửi đến anh ạ, nhớ đọc hết nhá!❤️</div></div>
+      <div class="card"><strong></strong><div class="sub"></div><input type="date" id="startDate" value="2025-06-21" disabled style="margin-top:8px;padding:8px;border-radius:8px;border:0;background:rgba(255,255,255,0.03);color:#fff"> Ngày mình bắt đầu là người yêu ạ ❤️</strong><div class="sub"></div><input type="date" id="endDate" value="2025-09-29" disabled style="margin-top:8px;padding:8px;border-radius:8px;border:0;background:rgba(255,255,255,0.03);color:#fff"> Ngày mình tròn 100 ngày iu nhau ha ❤️</div>
+    </div>
+  </div>
+  <footer>i love you 3000 ❤️</footer>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <img src="" id="modalImg">
+    <div class="meta">
+      <h3 id="modalTitle">Lời nhắn</h3>
+      <p id="modalCaption"></p>
+      <div style="margin-top:12px"><button class="btn" id="closeModal">Đóng</button></div>
+    </div>
+  </div>
+</div>
+
+<audio id="bgMusic" loop src="music.mp3"></audio>
+
+<!-- Màn trái tym  -->
+ 
+<div id="pinkboardScreen" style="display:none;position:fixed;inset:0;background:#000;z-index:100;">
+  <canvas id="pinkboardCanvas" style="width:100%;height:100%;display:block;"></canvas>
+  <button id="backBtn" class="btn" style="position:absolute;top:20px;right:20px;">Quay lại 💕</button>
+</div>
+
+<script>
+
+
+// đoạn này là ở màn 1  
+const startBtn = document.getElementById('startBtn');
+const introScreen = document.getElementById('introScreen');
+const passMsg = document.getElementById('passMsg');
+
+// Giá trị đúng
+const correctDate = '2025-06-21'; // ngày bắt đầu yêu nhau
+const correctPass = '040725040925';      // mật khẩu bí mật
+
+startBtn.addEventListener('click', () => {
+  const enteredDate = document.getElementById('dateInput').value;
+  const enteredPass = document.getElementById('passInput').value;
+
+  if (enteredDate === correctDate && enteredPass === correctPass) {
+    introScreen.style.display = 'none'; // ẩn màn đầu
+    initPage(); // mở trang chính
+  } else {
+    passMsg.textContent = 'Choas này giỏi, khum nhớ lun_Nhập lại đi nhá 💖 💕';
+  }
+});
+
+// gọi màn 2 
+// --- INIT PAGE ---
+function initPage() {
+  document.getElementById('mainHero').style.display = 'flex';
+  startTyping("Anh iu, chúc mừng 100 ngày của chúng ta 💕");
+  startCounting();
+  initGallery();
+  initFallingPics();
+  initGame();
+}
+ 
+
+
+
+ /* ========== SETTINGS ========== */
+    // Mặc định ngày bắt đầu: (edit nếu cần)
+    const defaultStart = '2025-06-21'; // thay bằng ngày 2 bạn bắt đầu (YYYY-MM-DD)
+    const day100Date = (dStr)=>{ const d=new Date(dStr); d.setDate(d.getDate()+99); return d; };
+
+    /* ========== TYPING TEXT ========== */
+    const phrases = [
+      'Phạm Tiến Dũng - em yêu anh',
+      'Anh phải yêu thương em nhiều hơn đó ạ',
+      'I love you so much  .',
+      'I miss you very much.'
+    ];
+
+    let tEl = document.getElementById('typingText');
+    let pIndex=0, cIndex=0; let deleting=false;
+    function typeTick(){
+      const txt = phrases[pIndex];
+      if(!deleting){
+        tEl.textContent = txt.slice(0, cIndex+1);
+        cIndex++;
+        if(cIndex === txt.length){ setTimeout(()=>deleting=true,1200); }
+      } else {
+        tEl.textContent = txt.slice(0, cIndex-1);
+        cIndex--;
+        if(cIndex===0){ deleting=false; pIndex=(pIndex+1)%phrases.length; }
+      }
+    }
+    setInterval(typeTick,80);
+
+
+
+// Đêm số ngày + số giờ 
+
+function startCounting() {
+  const startDate = new Date(document.getElementById('startDate').value + 'T00:00:00');
+  const daysCount = document.getElementById('daysCount');
+  const hoursCount = document.getElementById('hoursCount');
+  const secondsCount = document.getElementById('secondsCount');
+
+  function updateCount() {
+    const now = new Date();
+    const diff = now - startDate;
+
+    // số ngày (không bao gồm ngày bắt đầu)
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    // số giờ tổng cộng
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+
+    // Số giây
+
+    const seconds = Math.floor(diff / 1000);
+
+
+    daysCount.textContent = days;
+    hoursCount.textContent = hours;
+    secondsCount.textContent = seconds;
+  }
+
+  updateCount(); // cập nhật khi load
+  setInterval(updateCount, 1000); // cập nhật mỗi giây
+}
+
+startCounting();
+
+// popup click vào từng ảnh -> hineej chi tiết
+    /* ========== GALLERY MODAL ========== */
+    const gallery = document.getElementById('gallery');
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    const modalCaption = document.getElementById('modalCaption');
+    gallery.addEventListener('click', (e)=>{
+      if(e.target.tagName==='IMG'){
+        modal.style.display='flex';
+        modalImg.src = e.target.src;
+        modalCaption.textContent = e.target.dataset.caption || '';
+      }
+    });
+    document.getElementById('closeModal').addEventListener('click', ()=> modal.style.display='none');
+    modal.addEventListener('click', (e)=>{ if(e.target===modal) modal.style.display='none' });
+
+    /* ========== FALLING PHOTOS ========== */
+    const falling = document.getElementById('falling');
+    let fallEnabled = true;
+    const sampleImgs = ['images/5.jpg','images/6.jpg','images/7.jpg','images/8.jpg'];
+
+    function spawnImg(){
+      if(!fallEnabled) return;
+      const i = Math.floor(Math.random()*sampleImgs.length);
+      const img = document.createElement('img');
+      img.src = sampleImgs[i];
+      const startX = Math.random()*100;
+      const scale = 0.7 + Math.random()*0.6;
+      img.style.left = startX + '%';
+      img.style.transform = 'translateY(-120px) scale('+scale+') rotate('+ (Math.random()*25 - 12) +'deg)';
+      img.style.opacity = 0.95;
+      falling.appendChild(img);
+
+      // animate using JS
+      const duration = 8000 + Math.random()*7000;
+      const endY = window.innerHeight + 200;
+      const start = performance.now();
+      function anim(now){
+        const t = (now - start)/duration;
+        if(t>=1){ img.remove(); return; }
+        img.style.top = (t*endY - 80) + 'px';
+        requestAnimationFrame(anim);
+      }
+      requestAnimationFrame(anim);
+    }
+    let fallInt = setInterval(spawnImg, 800);
+    document.getElementById('togglePics').addEventListener('click', ()=>{ fallEnabled = !fallEnabled; if(!fallEnabled) falling.innerHTML=''; });
+
+    /* ========== MUSIC CONTROL ========== */
+    const music = document.getElementById('bgMusic');
+    const musicToggle = document.getElementById('musicToggle');
+    const trackName = document.getElementById('trackName');
+    trackName.textContent = 'song1.mp3';
+    musicToggle.addEventListener('click', ()=>{
+      if(music.paused){ music.play(); musicToggle.textContent='Pause'; } else { music.pause(); musicToggle.textContent='Play'; }
+    });
+
+    /* optional: show play button automatically for browsers that allow it */
+    document.addEventListener('click', ()=>{ /* user gesture unlock */ }, {once:true});
+
+    /* ========== RANDOM MESSAGE POPUP ========== */
+    document.getElementById('openPopup').addEventListener('click', ()=>{
+      const messages = [
+        ' I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  I love you 💋  .',
+        'Choassssss PTD 💋 Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD 💋Choassssss PTD  ',
+        'Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋 Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋Chị Chan vừa xinh + bắn hay -> pờ rồ, ăng này mê điêng 💋',
+        'Gửi anh nhìu nụ hôn ở đây 💋 Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋Gửi anh nhìu nụ hôn ở đây 💋'
+      ];
+      const m = messages[Math.floor(Math.random()*messages.length)];
+      // show modal as simple text card
+      modal.style.display='flex';
+      modalImg.src='images/10.jpg';
+      document.getElementById('modalTitle').textContent = 'Lời bất ngờ';
+      modalCaption.textContent = m;
+    });
+
+    /* ========== HEART CATCH GAME ========== */
+    const game = document.getElementById('game');
+    function spawnHeart(){
+      const h = document.createElement('div');
+      h.className='heart';
+      h.innerHTML='❤';
+      const left = Math.random()*80 + '%';
+      h.style.left = left;
+      h.style.top = '-40px';
+      h.style.fontSize = (18 + Math.random()*22) + 'px';
+      game.appendChild(h);
+      const fallD = 4000 + Math.random()*3000;
+      const start = performance.now();
+      function anim(now){
+        const t=(now-start)/fallD;
+        if(t>=1){ h.remove(); return; }
+        h.style.top = (t*160) + 'px';
+        requestAnimationFrame(anim);
+      }
+      requestAnimationFrame(anim);
+
+      h.addEventListener('click', ()=>{
+        h.remove();
+        // show a loving line
+        const lines=['Em nhớ bbi cụa em nhìu lắm, bbi cụa em có nhớ em khum zị, huuhuhhu ~~ Em bic iu xa bùn lắm, em cx bùn, cx tủi thân lắm vì chả đc ở bên ng iu nhìu, mấy ngày đặc biệt thì cx chả gặp đc nhau nên bé làm món quà nho nhỏ này tặng cho bbi cụa em nhá 💋. Đây cũng là lần đầu tiên em chú tâm học hỏi để làm ra đc web này đấy bbi ạ. SUY ra anh phải bic em yêu anh nhiều lắm đấy nhá💋','Chắc bbi cụa em cx bất ngờ ha, thấy em siu khum, heheh, quá siu lun đúng khum, heheh. Bbi cụa em iu thương em nhiều hơn nhá, nhường nhịn em xíu đi mừ, em là embess của anh mừ. Em chỉ mún nói là "EM yêu anh/ Em yêu chồng nhìu lắm ạ💋','Chúc mình cùng nhau cố gắng hơn nhá anh iu. Biết iu xa là khó nhưng mà chúng ra hãy cố lên, hãy vì nhau mà cố gắng nhá. Em mong rằng chúc ta có thể ở mãi bên nhau - và có 1 cái kết thật là đẹp với nhau ạ 💋'];
+        const m = lines[Math.floor(Math.random()*lines.length)];
+        modal.style.display='flex'; modalImg.src='images/2.jpg'; document.getElementById('modalTitle').textContent='Lời iu thương ha💋'; modalCaption.textContent=m;
+      });
+    }
+    setInterval(spawnHeart, 1600);
+
+    /* ========== INIT: create some initial falling pics quickly ========== */
+    for(let i=0;i<6;i++){ setTimeout(spawnImg, i*300); }
+
+    /* ========== HELPER: compute day100 Date string for display (optional) ========== */
+    function format(d){ return d.toLocaleDateString(); }
+    const d100 = day100Date(defaultStart);
+
+
+
+
+
+// đoạn này là màn trái tym 
+function startHeartAnimation() {
+  var canvas = document.getElementById('pinkboardCanvas');
+  var ctx = canvas.getContext('2d');
+
+
+  // SETTINGS
+  var settings = { particles: { length:3000, duration:4, velocity:80, effect:-1.3, size:8 } };
+
+  // requestAnimationFrame polyfill
+  (function(){var b=0,c=["ms","moz","webkit","o"];
+    for(var a=0;a<c.length&&!window.requestAnimationFrame;++a){
+      window.requestAnimationFrame=window[c[a]+"RequestAnimationFrame"];
+      window.cancelAnimationFrame=window[c[a]+"CancelAnimationFrame"]||window[c[a]+"CancelRequestAnimationFrame"]}
+    if(!window.requestAnimationFrame){
+      window.requestAnimationFrame=function(h,e){
+        var d=new Date().getTime();
+        var f=Math.max(0,16-(d-b));
+        var g=window.setTimeout(function(){h(d+f)},f);b=d+f;return g}}
+    if(!window.cancelAnimationFrame){
+      window.cancelAnimationFrame=function(d){clearTimeout(d)}}}());
+
+  // POINT
+  var Point=(function(){function Point(x,y){this.x=x||0;this.y=y||0;}
+    Point.prototype.clone=function(){return new Point(this.x,this.y)};
+    Point.prototype.length=function(l){if(l===undefined)return Math.sqrt(this.x*this.x+this.y*this.y);
+      this.normalize(); this.x*=l; this.y*=l; return this};
+    Point.prototype.normalize=function(){var l=this.length(); this.x/=l; this.y/=l; return this};
+    return Point;})();
+
+  // PARTICLE
+  var Particle=(function(){
+    function Particle(){this.position=new Point(); this.velocity=new Point(); this.acceleration=new Point(); this.age=0;}
+    Particle.prototype.initialize=function(x,y,dx,dy){
+      this.position.x=x; this.position.y=y;
+      this.velocity.x=dx; this.velocity.y=dy;
+      this.acceleration.x=dx*settings.particles.effect;
+      this.acceleration.y=dy*settings.particles.effect;
+      this.age=0;
+    };
+    Particle.prototype.update=function(dt){
+      this.position.x+=this.velocity.x*dt; this.position.y+=this.velocity.y*dt;
+      this.velocity.x+=this.acceleration.x*dt; this.velocity.y+=this.acceleration.y*dt;
+      this.age+=dt;
+    };
+    Particle.prototype.draw=function(ctx,image){
+      function ease(t){return (--t)*t*t+1;}
+      var size=image.width*ease(this.age/settings.particles.duration);
+      ctx.globalAlpha=1-this.age/settings.particles.duration;
+      ctx.drawImage(image,this.position.x-size/2,this.position.y-size/2,size,size);
+    };
+    return Particle;
+  })();
+
+  // PARTICLE POOL
+  var ParticlePool=(function(){
+    var particles, firstActive=0, firstFree=0, duration=settings.particles.duration;
+    function ParticlePool(length){particles=new Array(length); for(var i=0;i<length;i++)particles[i]=new Particle();}
+    ParticlePool.prototype.add=function(x,y,dx,dy){particles[firstFree].initialize(x,y,dx,dy);
+      firstFree++; if(firstFree==particles.length)firstFree=0;
+      if(firstActive==firstFree)firstActive++; if(firstActive==particles.length)firstActive=0;};
+    ParticlePool.prototype.update=function(dt){
+      if(firstActive<firstFree){for(var i=firstActive;i<firstFree;i++)particles[i].update(dt);}
+      if(firstFree<firstActive){for(var i=firstActive;i<particles.length;i++)particles[i].update(dt); for(var i=0;i<firstFree;i++)particles[i].update(dt);}
+      while(particles[firstActive].age>=duration && firstActive!=firstFree){firstActive++; if(firstActive==particles.length)firstActive=0;}};
+    ParticlePool.prototype.draw=function(ctx,image){
+      if(firstActive<firstFree){for(var i=firstActive;i<firstFree;i++)particles[i].draw(ctx,image);}
+      if(firstFree<firstActive){for(var i=firstActive;i<particles.length;i++)particles[i].draw(ctx,image); for(var i=0;i<firstFree;i++)particles[i].draw(ctx,image);}};
+    return ParticlePool;
+  })();
+
+  // POINT ON HEART
+  function pointOnHeart(t){return new Point(
+    160*Math.pow(Math.sin(t),3),
+    130*Math.cos(t)-50*Math.cos(2*t)-20*Math.cos(3*t)-10*Math.cos(4*t)+25
+  );}
+
+  // IMAGE
+  var image=(function(){
+    var c=document.createElement('canvas'), ctx2=c.getContext('2d');
+    c.width=settings.particles.size; c.height=settings.particles.size;
+    function to(t){var p=pointOnHeart(t); p.x=settings.particles.size/2+p.x*settings.particles.size/350; p.y=settings.particles.size/2-p.y*settings.particles.size/350; return p;}
+    ctx2.beginPath(); var t=-Math.PI; var p=to(t); ctx2.moveTo(p.x,p.y);
+    while(t<Math.PI){t+=0.01;p=to(t); ctx2.lineTo(p.x,p.y);} ctx2.closePath();
+    ctx2.fillStyle='#f50b02'; ctx2.fill();
+    var img=new Image(); img.src=c.toDataURL(); return img;
+  })();
+
+  var particles=new ParticlePool(settings.particles.length), particleRate=settings.particles.length/settings.particles.duration, time;
+
+  function render(){
+    requestAnimationFrame(render);
+    var newTime=new Date().getTime()/1000, dt=newTime-(time||newTime); time=newTime;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var amount=particleRate*dt;
+    for(var i=0;i<amount;i++){
+      var pos=pointOnHeart(Math.PI-2*Math.PI*Math.random());
+      var dir=pos.clone().length(settings.particles.velocity);
+      particles.add(canvas.width/2+pos.x,canvas.height/2-pos.y,dir.x,-dir.y);
+    }
+    particles.update(dt); particles.draw(ctx,image);
+  }
+
+  function onResize(){canvas.width=canvas.clientWidth; canvas.height=canvas.clientHeight;}
+  window.onresize=onResize;
+  onResize(); render();
+}
+
+// BUTTON EVENTS
+document.getElementById('pinkboardbtn').onclick = function() {
+  document.getElementById('pinkboardScreen').style.display = 'block';
+  startHeartAnimation();
+};
+
+document.getElementById('backBtn').onclick = function() {
+  document.getElementById('pinkboardScreen').style.display = 'none';
+};
+
+// đoạn ảnh + chữ rơi
+
+
+
+  </script>
+
+
+</body>
+</html>
